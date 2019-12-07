@@ -86,12 +86,15 @@
               success : function(res){
                 // console.log(res);
                 $('#myModal').modal();
-              $('.modal-body').text(res.msg);
-                 
-                  if(res.code === 200){
-                      localStorage.setItem('token',res.token);
+                 $('.modal-body').text(res.msg);
+                 if(res.code === 200){
+                  $('#myModal').on('hidden.bs.modal', function () {
+                    localStorage.setItem('token',res.token);
                       location.href = './index.html';
+                    })
+                     
                   }
+                 
               }
           })
           
