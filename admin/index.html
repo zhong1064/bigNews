@@ -55,4 +55,19 @@
         </div>
     </div>
 </body>
+<script src="./libs/jquery-1.12.4.min.js"></script>
+<script src="./js/http.js"></script>
+<script>
+   // 开始进入页面 发aja请求用户数据
+   $.ajax({
+       url : BigNew.user_info,
+       type : 'get',
+       success : function(res){
+             if(res.code === 200){
+                 console.log(res);
+                 
+             }
+       }
+   })
+</script>
 </html>
