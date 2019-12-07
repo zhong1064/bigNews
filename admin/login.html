@@ -38,6 +38,58 @@
     </div>
   </div>
 
-</body>
+   <!-- 使用bootstrap中的模态框用来提示用户 -->
+   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+        </div>
+        <div class="modal-body">
 
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+<script src="./js/http.js"></script>
+<script>
+  $(function(){
+    $('.input_sub').on('click',function(e){
+          // 禁止submit的默认行为
+          e.preventDefault();
+          // 获取用户名和密码
+          let useName = $('.input_txt').val().trim();
+          let password = $('.input_pass').val().trim();
+
+          // 判断用户名和密码是否合理
+          if(useName.length == 0 || password == 0){
+              $('#myModal').modal();
+              $('.modal-body').text('请输入用户名或密码');
+               return;
+          }
+          $.ajax({
+              url : BigNew.user_login,
+              type : 'post',
+              data : {
+                username : useName,
+                password : password
+              },
+              success : function(res){
+                  
+              }
+          })
+          
+    })
+
+  }) 
+</script>
 </html>
