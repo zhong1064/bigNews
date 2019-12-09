@@ -44,7 +44,7 @@
                     <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
                     <div class="col-sm-10">
                         <img src="images/2.jpg" alt="" class="user_pic">
-                        <input style="display: block" name="userPic" type="file" id="exampleInputFile">
+                        <input style="display: none" name="userPic" type="file" id="exampleInputFile">
                         <!-- 给label标签的for属性赋值,值是input标签的id,那这样的话点击label就相当于点击了input -->
                         <br>
                         <label for="exampleInputFile">
@@ -70,4 +70,74 @@
     </div>
 </body>
 <script src="./js/http.js"></script>
+<script>
+   $(function(){
+       //发送ajax请求数据
+       $.get({
+           url : BigNew.user_detail,
+           success : function(res){
+               if(res.code === 200){
+                //    $('#inputEmail1').val(res.data.username);
+                //    $('#inputEmail2').val(res.data.nickname);
+                //    $('#inputEmail3').val(res.data.email);
+                //    $('#inputEmail4').val(res.data.password);
+
+                for(var key in res.data) {
+                    $('input.' + key).val(res.data[key])
+                }
+                   $('.user_pic').attr('src',res.data.userPic);
+               }
+               
+           }
+       })
+    // 给input文件按钮 注册change事件
+    $('#exampleInputFile').on('change',function(){
+      // 获得文件
+      let imgFile = this.files[0];
+     // 转换为图片路径
+     let url = URL.createObjectURL(imgFile);
+     // 把路径设置给头像
+    $('img.user_pic').attr('src',url);
+        
+    });
+    // 点击修改按钮 注册事件
+    $('.btn-edit').on('click',function(e){
+        // 禁止submit的属性 
+        e.preventDefault();
+        // 获取页面信息
+        let form = document.querySelector('#form');
+        // 把form转换为二进制数据
+        let userdata = new FormData(form);
+       //发送ajax请求
+       $.post({
+           url : BigNew.user_edit,
+           data : userdata,
+           // 禁止jq更改数据格式和请求头
+           processData : false,
+           contentType : false,
+          success : function(res){
+           if(res.code === 200){ 
+               $.get({
+                   url : window.BigNew.user_info,
+                  success : function(res){
+                     if(res.code === 200){
+                         console.log(res);
+                         
+                  parent.$('.user_info img').attr('src',res.data.userPic);
+                  parent.$('.user_info span').html(`欢迎&nbsp;&nbsp;${res.data.nickname}`);
+                   parent.$('.user_center_link  img').attr('src',res.data.userPic);
+                  
+                     }
+                      
+                  }
+               })
+           }
+            
+          }
+       })
+    })
+
+
+   })
+</script>
 </html>
