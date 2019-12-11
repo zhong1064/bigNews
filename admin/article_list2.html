@@ -100,64 +100,57 @@
     </tr>
       {{/each}}
   </script>
-    <script>
-
-        $(function(){
-             // 加载页面获取所有信息
-             $.get({
-                url : BigNew.category_list,
-                success : function(res){
-                  if(res.code == 200){
-                      let htmlStr = template('categroyList',res);
-                      //添加到页面
-                      $('#selCategory').html(htmlStr);
-                    
-                  }
-                    
-                } 
-             })
-           
-             
-
-         //封装一个获取数据的方法
-         function getData(pages,callback){
-
-          
-             $.get({
-                 url : BigNew.article_query,
-                 data : {
-                     type: $('#selCategory').val(),
-                     state : $('#selStatus').val(),
-                     page : pages,
-                     perpage : perpage
-                 },
-                 success : function(res){
-                    
-                     
-                    let htmlStr = template('crtList',res);
-                    $('tbody').html(htmlStr);
-                    
-                // 我们获取数据之后，还需要在这里写代码，所以我们使用一个回调函数 
-                  if(res.data.data.length != 0 && callback != null){
-                       $('#pagination-demo').show();
-                       $('#tips').hide();
-                       callback(res)
-                  } else if(res.data.data.length == 0){
-                    $('#pagination-demo').hide();
-                    $('#tips').show();
-                  }
-                     
-                 }
-             })  
+  <script>
+    $(function(){
+        // 发请求获取所有类型文章数据
+        $.get({
+            url : BigNew.category_list,
+            success : function(res){
+               if(res.code == 200){
+                   let htmlStr = template('categroyList',res);
+                   $('#selCategory').html(htmlStr);
+               }
               
+            }
+        })
 
-         }
-           // 定义2个变量 
-           let mypage = 1;
-            let perpage = 10;
-       // 页面一加载就展示文章条目数据
-            getData(mypage, function(res){
-                $('#pagination-demo').twbsPagination({
+      
+        // 封装一获取数据的函数
+       
+        function getData(pages,callback){
+            $.get({
+                url : BigNew.article_query,
+                data : {
+                    type : $('#selCategory').val(),
+                    state : $('#selStatus').val(),
+                    page : pages,
+                    perpage : perpage
+                },
+                success : function(res){
+                      if(res.code == 200){
+                          let htmlStr = template('crtList',res);
+                          $('tbody').html(htmlStr);
+                          // 我们获取数据之后，还需要在这里写代码，所以使用一个回调函数
+                          if(res.data.data.length != 0 && callback != null){
+                              $('#pagination-demo').show();
+                              $('#tips').hide()
+                               callback(res)
+                          } else if(res.data.data.length == 0){
+                              $('#tips').show();
+                              $('#pagination-demo').hide();
+                          }
+                      }
+                      
+                }
+            });
+         
+
+        }
+        let mypage = 1;
+        let perpage = 10;
+        // 页面一加载，就显示所有数据
+         getData(mypage,function(res){
+            $('#pagination-demo').twbsPagination({
                     totalPages: res.data.totalPage,
                     visiblePages: 7,
                     first: '首页',
@@ -165,41 +158,44 @@
                     next: '下一页',
                     last: '尾页',
                     onPageClick: function (event, page) {
+                        // 把点击的值赋值给mypage这个变量使页面数据，显示点中页面的数据
                         mypage = page;
                         getData(mypage, null);
                     }
                 });
-            })
-        
-        // 筛选按钮注册点击事件
-         $('#btnSearch').on('click',function(e){
-             // 阻止默认行为
-             e.preventDefault();
-             getData(mypage,function(res){
-                // 搜索到的数据条目是不一样的，所以总的页数是会动改变的
+         });
+       // 点击筛选按钮注册事件
+       $('#btnSearch').on('click',function(e){
+              //阻止submit按钮的默认行为
+              e.preventDefault();
+              getData(mypage,function(res){
+                  // 通过拆件的方法改变筛选后的totalPage 和显示第一页
                 $('#pagination-demo').twbsPagination('changeTotalPages',res.data.totalPage,1)
-             });
-         })
+              })
+       })
 
-         // 删除文章 需要使用事件委托来注册
-         $('tbody').on('click','.delete',function(){
-             let artId = $(this).attr('data-id');
-             if(confirm('你确定要删除吗？')){
-                 $.post({
-                     url : category_delete,
-                     data : {
-                         id : artId
-                     },
-                     success : function(res){
-                         getData(mypage,function(res){
-                            $('#pagination-demo').twbsPagination('changeTotalPages',res.data.totalPage,mypage)
-                         })
-                     }
-                 })
-             }
-             
-         })
-        })
-       
-    </script>
+       // 点击删除 删除文章 用事件委托注册事件
+       $('tbody').on('click','.delete',function(){
+           // 获取点击的id 
+           let crtId = $(this).attr('data-id');
+          if(confirm("您确定要删除吗")){
+            $.post({
+               url : BigNew.article_delete,
+               data : {
+                   id : crtId,
+
+               },
+               success : function(res){
+                  if(res.code == 204){
+                      getData(mypage,function(res){
+                        $('#pagination-demo').twbsPagination('changeTotalPages',res.data.totalPage,mypage);
+                      })
+                  }
+               }
+           })
+          }
+       })
+
+    })
+  </script>
 </html>
