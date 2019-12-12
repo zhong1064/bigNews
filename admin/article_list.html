@@ -142,7 +142,11 @@
                        $('#pagination-demo').show();
                        $('#tips').hide();
                        callback(res)
-                  } else if(res.data.data.length == 0){
+                  } else if(res.data.totalPage != 0  && res.data.data.length == 0  && res.data.totalPage == mypage - 1) {
+                          mypage -= -1;
+                          $('#pagination-demo').twbsPagination('changeTotalPages',res.data.totalPage,mypage)
+                  }
+                   else{
                     $('#pagination-demo').hide();
                     $('#tips').show();
                   }
