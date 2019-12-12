@@ -135,7 +135,11 @@
                               $('#pagination-demo').show();
                               $('#tips').hide()
                                callback(res)
-                          } else if(res.data.data.length == 0){
+                          } else if(res.data.totalPage != 0  && res.data.data.length == 0  && res.data.totalPage == mypage - 1){
+                            mypage -= 1;
+                          $('#pagination-demo').twbsPagination('changeTotalPages',res.data.totalPage,mypage)
+                          }
+                          else {
                               $('#tips').show();
                               $('#pagination-demo').hide();
                           }
@@ -160,7 +164,7 @@
                     onPageClick: function (event, page) {
                         // 把点击的值赋值给mypage这个变量使页面数据，显示点中页面的数据
                         mypage = page;
-                        getData(mypage, null);
+                        getData(mypage, function(){});
                     }
                 });
          });

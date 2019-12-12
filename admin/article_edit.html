@@ -10,10 +10,14 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jeDate-test.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css">
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
+    <script src="./libs/jedate/js/jedate.js"></script>
+    <script src="./libs/wangEditor.js"></script>
 </head>
 
 <body>
@@ -25,7 +29,7 @@
             <form class="form-horizontal article_form" id="form">
                 <div class="form-group">
                     <label for="inputTitle" class="col-sm-2 control-label">文章标题：</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-8">
                         <input type="text" name="title" class="form-control title" id="inputTitle" value="文章标题文字">
                     </div>
                 </div>
@@ -40,23 +44,27 @@
                     <label for="inputCategory" class="col-sm-2 control-label">文章类别：</label>
                     <div class="col-sm-4">
                         <select class="form-control category" name="categoryId">
-                            <option>类别一</option>
+                            <!-- <option>类别一</option>
                             <option>类别二</option>
                             <option>类别三</option>
                             <option selected>类别四</option>
-                            <option>类别五</option>
+                            <option>类别五</option> -->
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
                     <div class="col-sm-4">
+                            <input type="text" class="jeinput" id="testico" placeholder="YYYY-MM-DD" name="date">
+                            <div class="icons jebtns" onclick="jeDate('#testico',{trigger:false,format: 'YYYY-MM-DD',zIndex:30000})">
+                            </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
-                    </div>
+                    <div id="editor" class="col-sm-8">
+                            <p>请尽情的展示的文采</p>
+                        </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
@@ -68,5 +76,106 @@
         </div>
     </div>
 </body>
+  <script type="text/html" id="editList">
+     {{each data}}
+     <option value="{{$value.id}}">{{$value.name}}</option>
+       {{/each}}
+  </script>
+  <script src="./js/http.js"></script>
+  <script>
+     $(function(){
+         //实现图片预览效果
+         $('#inputCover').on('change',function(){
+             let file = this.files[0];
+             let url = URL.createObjectURL(file);
+             $('.article_cover').attr('src',url);
+         })
+         // 实现文章分类加载完成
+         $.get({
+             url : BigNew.category_list,
+             success : function(res){
+                let htmlStr = template('editList',res);
+                $('.category').html(htmlStr);
+                   
+             }
+         })
+          // 3.添加日期插件 
+            //添加这个方法的目的是为了让日期插件在点击输入框的时候也能关联到日期
+            jeDate("#testico", {
+                format: "YYYY-MM-DD",
+                isTime: false,
+                minDate: "2014-09-19 00:00:00",
+                zIndex:30000
+            })
+             // 4.添加富文本编辑器
+             var E = window.wangEditor
+            var editor = new E('#editor')
+            // 或者 var editor = new E( document.getElementById('editor') )
+            editor.create()
+            // 根据不同的文字id获取文字的具体数据，然后将数据渲染到页面不同的框中
+        let articleId = location.search.substring(4)
+        // 发送ajax请求获取数据
+         $.get({
+             url : BigNew.article_search,
+             data : {
+                 id : articleId
+             },
+             success : function(res){
+               if(res.code == 200){
+                   $('#inputTitle').val(res.data.title);
+                   $('.article_cover').attr('src',res.data.cover);
+                   $('.category').val(res.data.categoryId);
+                   $('#testico').val(res.data.date);
+                   // 设置王编辑器的内容
+                   editor.txt.html(res.data.content);
+               }
+                
+                
+             }
+         })
+        
+        
 
+         function getshuju(ms,fs){
+             
+           
+           // 获取数据，发AJAX请求
+           // 使用formData的方式来提交数据
+           let file = $('#form')[0];
+           let fd = new FormData(file);
+          fd.append('content',editor.txt.html());
+          // 修改完文字，默认是已经发布
+          fd.append('state',ms);
+          fd.append('id',articleId);
+          // 发送ajax请求
+          $.post({
+              url : fs,
+              data : fd,
+              // 禁止jq更改数据格式，和请求头
+              processData : false,
+              contentType : false,
+              success : function(res){
+                  
+                 if(res.code == 200){
+                    // BOM方法 回退一步
+                    window.history.back();
+                 }
+              }
+          })
+         }
+
+         // 当点击修改按钮时，将文章数据更新，注册点击事件
+         $('.btn-edit').on('click',function(e){
+             
+              e.preventDefault();
+             getshuju('已发布',BigNew.article_edit)
+         })
+
+         // 当 点击存草稿时，先获取数据，发请求到服务器，退一页
+         $('.btn-draft').on('click',function(e){
+            e.preventDefault();
+            getshuju('草稿',BigNew.article_edit);
+         })
+     })
+  </script>
 </html>

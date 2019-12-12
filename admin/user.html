@@ -121,7 +121,7 @@
                    url : window.BigNew.user_info,
                   success : function(res){
                      if(res.code === 200){
-                         console.log(res);
+                        
                          
                   parent.$('.user_info img').attr('src',res.data.userPic);
                   parent.$('.user_info span').html(`欢迎&nbsp;&nbsp;${res.data.nickname}`);

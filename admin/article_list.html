@@ -170,7 +170,7 @@
                     last: '尾页',
                     onPageClick: function (event, page) {
                         mypage = page;
-                        getData(mypage, null);
+                        getData(mypage, function(){});
                     }
                 });
             })
